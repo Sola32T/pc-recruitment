@@ -167,11 +167,8 @@
     </div>
   </div>
 
-  <form id="form" novalidate action="https://formsubmit.co/artisata777@gmail.com" method="POST">
-    <input type="hidden" name="_subject" value="Новая заявка — Project Cataclysm Level Art">
-    <input type="hidden" name="_captcha" value="false">
-    <input type="hidden" name="_next" value="about:blank">
-    <input type="hidden" name="_template" value="table">
+  <form id="form" novalidate>
+
 
     <div class="about-box">
       <p><strong>Project Cataclysm</strong> — фанатский онлайн-проект по вселенной S.T.A.L.K.E.R. на платформе Minecraft. Мы воссоздаём атмосферу Чернобыльской Зоны Отчуждения после катастрофического Выброса — с нуля, вручную, блок за блоком. Проект существует более трёх лет.</p>
@@ -472,6 +469,7 @@ function updateProgress(){
 document.querySelectorAll('input[type="text"],textarea').forEach(el=>el.addEventListener('input',updateProgress));
 
 document.getElementById('form').addEventListener('submit',function(e){
+  e.preventDefault();
   const missing=[];
   reqFields.forEach(n=>{
     const radios=document.querySelectorAll(`[name="${n}"]`);
@@ -479,12 +477,78 @@ document.getElementById('form').addEventListener('submit',function(e){
     const el=document.querySelector(`[name="${n}"]`);
     if(!el||!el.value.trim())missing.push(n);
   });
-  if(missing.length>0){
-    e.preventDefault();
-    alert('Пожалуйста, заполни все обязательные поля (отмечены *)');
-    return;
-  }
-  // validation passed — form submits natively to FormSubmit
+  if(missing.length>0){alert('Пожалуйста, заполни все обязательные поля (отмечены *)');return;}
+
+  const btn=document.querySelector('.btn-submit');
+  btn.textContent='Отправка...';
+  btn.disabled=true;
+
+  const fields=[
+    ['Discord',           'discord'],
+    ['ВКонтакте',         'vk'],
+    ['Возраст',           'age'],
+    ['Часовой пояс',      'tz'],
+    ['Время в день',      'time'],
+    ['Испытательный срок','probation'],
+    ['Созвоны',           'calls'],
+    ['Тестовое задание',  'test_ready'],
+    ['Выбор изображения', 'img_choice_result'],
+    ['Объяснение выбора', 'img_explain'],
+    ["Carpenter's Blocks",'carpenter'],
+    ['WorldEdit команды', 'worldedit'],
+    ['VoxelSniper',       'voxel'],
+    ['Уровень навыка',    'skill_level'],
+    ['Прошлые проекты',   'prev_projects'],
+    ['Портфолио',         'portfolio'],
+    ['Атмосфера Зоны',    'stalker_feel'],
+    ['Мотивация',         'motivation'],
+    ['Реакция на правки', 'feedback_reaction'],
+    ['Время на постройку','build_time'],
+    ['Подтверждение',     'confirm'],
+  ];
+
+  let msg='🎮 *НОВАЯ ЗАЯВКА — Project Cataclysm*\n';
+  msg+='━━━━━━━━━━━━━━━━━━━━\n';
+  fields.forEach(([label,name])=>{
+    const radios=document.querySelectorAll(`[name="${name}"]`);
+    let val='';
+    if(radios.length>0&&radios[0].type==='radio'){
+      const checked=document.querySelector(`[name="${name}"]:checked`);
+      val=checked?checked.value:'—';
+    }else{
+      const el=document.querySelector(`[name="${name}"]`);
+      val=el&&el.value.trim()?el.value.trim():'—';
+    }
+    msg+=`*${label}:* ${val}\n`;
+  });
+  msg+='━━━━━━━━━━━━━━━━━━━━';
+
+  fetch('https://api.telegram.org/bot8655316380:AAF8ETE0P39Yq25TiNj4B6R_5hzyfB1rCcE/sendMessage',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      chat_id:'1573701379',
+      text:msg,
+      parse_mode:'Markdown'
+    })
+  })
+  .then(r=>r.json())
+  .then(data=>{
+    if(data.ok){
+      document.getElementById('form').style.display='none';
+      document.getElementById('success').classList.add('show');
+      window.scrollTo({top:0,behavior:'smooth'});
+    }else{
+      alert('Ошибка отправки. Попробуй ещё раз или напиши куратору напрямую.');
+      btn.textContent='Отправить заявку';
+      btn.disabled=false;
+    }
+  })
+  .catch(()=>{
+    alert('Ошибка соединения. Проверь интернет и попробуй ещё раз.');
+    btn.textContent='Отправить заявку';
+    btn.disabled=false;
+  });
 });
 </script>
 </body>
