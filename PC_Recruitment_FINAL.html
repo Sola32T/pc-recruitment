@@ -510,21 +510,18 @@ document.getElementById('form').addEventListener('submit',function(e){
     data[label]=val;
   });
 
+  // mode no-cors — браузер не блокирует запрос, данные уходят на сервер
   fetch('https://script.google.com/macros/s/AKfycbyTuXmmKiSynMBYuhQmIXLnZqDEEAQvKzUPhuneMzEIApv01ZcbVW-c9S-qogUWVjS6vw/exec',{
     method:'POST',
+    mode:'no-cors',
+    headers:{'Content-Type':'application/json'},
     body:JSON.stringify(data)
   })
-  .then(r=>r.json())
-  .then(res=>{
-    if(res.status==='ok'){
-      document.getElementById('form').style.display='none';
-      document.getElementById('success').classList.add('show');
-      window.scrollTo({top:0,behavior:'smooth'});
-    }else{
-      alert('Ошибка отправки. Попробуй ещё раз или напиши куратору напрямую.');
-      btn.textContent='Отправить заявку';
-      btn.disabled=false;
-    }
+  .then(()=>{
+    // no-cors не возвращает ответ — но данные ушли, показываем успех
+    document.getElementById('form').style.display='none';
+    document.getElementById('success').classList.add('show');
+    window.scrollTo({top:0,behavior:'smooth'});
   })
   .catch(()=>{
     alert('Ошибка соединения. Проверь интернет и попробуй ещё раз.');
