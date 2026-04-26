@@ -479,21 +479,24 @@ document.getElementById('form').addEventListener('submit',function(e){
   });
   if(missing.length>0){alert('Пожалуйста, заполни все обязательные поля (отмечены *)');return;}
 
+  const btn=document.querySelector('.btn-submit');
+  btn.textContent='Отправка...';
+  btn.disabled=true;
+
   const fields=[
     ['Discord','discord'],['ВКонтакте','vk'],['Возраст','age'],
     ['Часовой пояс','tz'],['Время в день','time'],
     ['Испытательный срок','probation'],['Созвоны','calls'],
     ['Тестовое задание','test_ready'],['Выбор изображения','img_choice_result'],
     ['Объяснение выбора','img_explain'],["Carpenter's Blocks",'carpenter'],
-    ['WorldEdit','worldedit'],['VoxelSniper','voxel'],['Уровень навыка','skill_level'],
-    ['Прошлые проекты','prev_projects'],['Портфолио','portfolio'],
-    ['Атмосфера Зоны','stalker_feel'],['Мотивация','motivation'],
-    ['Реакция на правки','feedback_reaction'],['Время на постройку','build_time'],
-    ['Подтверждение','confirm']
+    ['WorldEdit','worldedit'],['VoxelSniper','voxel'],
+    ['Уровень навыка','skill_level'],['Прошлые проекты','prev_projects'],
+    ['Портфолио','portfolio'],['Атмосфера Зоны','stalker_feel'],
+    ['Мотивация','motivation'],['Реакция на правки','feedback_reaction'],
+    ['Время на постройку','build_time'],['Подтверждение','confirm']
   ];
 
-  let body='НОВАЯ ЗАЯВКА — Project Cataclysm Level Art\n';
-  body+='============================================\n\n';
+  const data={};
   fields.forEach(([label,name])=>{
     const radios=document.querySelectorAll(`[name="${name}"]`);
     let val='';
@@ -504,19 +507,30 @@ document.getElementById('form').addEventListener('submit',function(e){
       const el=document.querySelector(`[name="${name}"]`);
       val=el&&el.value.trim()?el.value.trim():'не указано';
     }
-    body+=label+':\n'+val+'\n\n';
+    data[label]=val;
   });
-  body+='============================================';
 
-  const subject=encodeURIComponent('Новая заявка — Project Cataclysm Level Art');
-  const bodyEnc=encodeURIComponent(body);
-  window.location.href=`mailto:artisata777@gmail.com?subject=${subject}&body=${bodyEnc}`;
-
-  setTimeout(()=>{
-    document.getElementById('form').style.display='none';
-    document.getElementById('success').classList.add('show');
-    window.scrollTo({top:0,behavior:'smooth'});
-  },1500);
+  fetch('https://script.google.com/macros/s/AKfycbyTuXmmKiSynMBYuhQmIXLnZqDEEAQvKzUPhuneMzEIApv01ZcbVW-c9S-qogUWVjS6vw/exec',{
+    method:'POST',
+    body:JSON.stringify(data)
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    if(res.status==='ok'){
+      document.getElementById('form').style.display='none';
+      document.getElementById('success').classList.add('show');
+      window.scrollTo({top:0,behavior:'smooth'});
+    }else{
+      alert('Ошибка отправки. Попробуй ещё раз или напиши куратору напрямую.');
+      btn.textContent='Отправить заявку';
+      btn.disabled=false;
+    }
+  })
+  .catch(()=>{
+    alert('Ошибка соединения. Проверь интернет и попробуй ещё раз.');
+    btn.textContent='Отправить заявку';
+    btn.disabled=false;
+  });
 });
 </script>
 </body>
